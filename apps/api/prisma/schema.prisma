@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUMS ---
+enum Role {
+  USER
+  AGENT
+  ADMIN
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  VILLA
+  COMMERCIAL
+  LAND
+  OFFICE
+}
+
+enum ListingStatus {
+  DRAFT
+  PENDING_APPROVAL
+  PUBLISHED
+  SOLD
+  RENTED
+  REJECTED
+}
+
+enum ListingType {
+  SALE
+  RENT
+}
+
+// --- USERS & AUTH ---
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  phone     String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  listings  Property[] // If agent
+  leads     Lead[]     // If user (leads sent)
+  managedLeads Lead[] @relation("AgentLeads") // If agent (leads received)
+}
+
+// --- PROPERTIES ---
+model Property {
+  id          String        @id @default(uuid())
+  slug        String        @unique // For SEO URLs
+  title       String
+  description String        @db.Text
+  price       Decimal       @db.Decimal(15, 2)
+  type        PropertyType
+  listingType ListingType
+  status      ListingStatus @default(DRAFT)
+  
+  // Location (We will store manual fields + PostGIS sync separate)
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  latitude    Float
+  longitude   Float
+
+  // Details
+  bedrooms    Int?
+  bathrooms   Int?
+  areaSqFt    Float
+  features    Json?         // Flexible features list
+
+  // Relations
+  agentId     String
+  agent       User          @relation(fields: [agentId], references: [id])
+  images      Media[]
+  leads       Lead[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([city])
+  @@index([price])
+  @@index([type])
+  @@index([status])
+}
+
+// --- MEDIA (S3) ---
+model Media {
+  id         String   @id @default(uuid())
+  url        String
+  type       String   @default("IMAGE") // IMAGE, VIDEO
+  isThumbnail Boolean @default(false)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+// --- LEADS ---
+model Lead {
+  id         String   @id @default(uuid())
+  message    String   @db.Text
+  userId     String?  // Optional: Guest leads
+  user       User?    @relation(fields: [userId], references: [id])
+  
+  agentId    String
+  agent      User     @relation("AgentLeads", fields: [agentId], references: [id])
+  
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+
+  createdAt  DateTime @default(now())
+}
