@@ -1,0 +1,27 @@
+[
+  {
+    "id": "TC001",
+    "title": "user authentication registration and login",
+    "description": "Test the user registration and login endpoints to ensure secure authentication with JWT tokens for different roles including Users, Agents, and Admins."
+  },
+  {
+    "id": "TC002",
+    "title": "property management create update delete",
+    "description": "Verify the property management endpoints support creating, updating, and deleting property listings with detailed information and images."
+  },
+  {
+    "id": "TC003",
+    "title": "property search with filters",
+    "description": "Test the advanced search API to ensure it returns accurate property listings filtered by city, price range, and rent/sale type."
+  },
+  {
+    "id": "TC004",
+    "title": "user favorites and inquiries",
+    "description": "Validate the user engagement endpoints for saving favorites, sending lead inquiries, and booking viewings with token payments."
+  },
+  {
+    "id": "TC005",
+    "title": "admin panel statistics and listing management",
+    "description": "Test the admin panel APIs for displaying platform statistics such as revenue, active users, and properties, and managing listing approvals with mobile responsiveness."
+  }
+]

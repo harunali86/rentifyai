@@ -56,13 +56,25 @@ cd apps/web
 npm run dev
 ```
 
-## 🧩 Core Features (Phase 1)
-- [ ] **Auth:** Role-based access (User/Agent/Admin) via JWT.
-- [ ] **Listings:** CRUD with Image Uploads (S3).
-- [ ] **Search:** Elasticsearch Geo-spatial queries.
-- [ ] **Dashboard:** Admin approval queue.
+## 🧩 Core Features (Production Ready)
+- [x] **Secure Auth:** JWT with Refresh Token Rotation and 2FA-ready email verification.
+- [x] **Advanced Search:** Hybrid PostgreSQL + Elasticsearch 8.x search logic.
+- [x] **Escrow Booking:** Anti-leakage system (Details locked until holding fee is paid).
+- [x] **Admin Moderation:** Full property verification and agent management dashboard.
+- [x] **Media System:** S3 integration with CloudFront CDN and optimized image grids.
+- [x] **SEO & Performance:** SSG/SSR optimization with dynamic metadata and sitemaps.
+
+## 🛡️ Platform Protection
+To prevent off-platform scams and ensure platform revenue, RentifyAI implements **Escrow Booking**:
+- Agent contact details are masked by default.
+- Users must express interest and pay a simulated platform holding fee.
+- Transactions are verified before contact information is revealed.
 
 ## ⚠️ Global Rules (See `MEMORY[user_global]`)
 - **No generic data:** Use realistic Indian names/data.
 - **Premium UI:** Rich aesthetics, no basic skeletons.
 - **Scalability:** Code must support 50k+ listings logic.
+- **Clean Architecture:** 
+  - **Routes/Controllers:** Must be "Traffic Cops" only (Readable).
+  - **Services:** Must contain ALL business logic (Scalable).
+  - **Middleware/Guards:** Handle security/validation separately.

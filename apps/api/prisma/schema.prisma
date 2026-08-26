@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// --- ENUMS ---
+// --- ENUMS (PostgreSQL Native Support) ---
 enum Role {
   USER
   AGENT
@@ -15,21 +15,19 @@ enum Role {
 }
 
 enum PropertyType {
-  APARTMENT
-  HOUSE
-  VILLA
+  RESIDENTIAL
   COMMERCIAL
+  INDUSTRIAL
   LAND
-  OFFICE
 }
 
 enum ListingStatus {
   DRAFT
-  PENDING_APPROVAL
+  PENDING
   PUBLISHED
+  VERIFIED
   SOLD
   RENTED
-  REJECTED
 }
 
 enum ListingType {
@@ -48,11 +46,61 @@ model User {
   avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  // Email Verification
+  isVerified      Boolean  @default(false)
+  verifyToken     String?  @unique
+  
+  // Password Reset
+  resetToken       String?  @unique
+  resetTokenExpiry DateTime?
+
+  // Refresh Token
+  hashedRefreshToken String?
 
   // Relations
   listings  Property[] // If agent
   leads     Lead[]     // If user (leads sent)
   managedLeads Lead[] @relation("AgentLeads") // If agent (leads received)
+  bookings  Booking[] // If user (bookings made)
+  managedBookings Booking[] @relation("AgentBookings") // If agent (bookings received)
+  favorites Property[] @relation("UserFavorites") // Saved Homes
+  savedSearches SavedSearch[]
+}
+
+model SavedSearch {
+  id        String   @id @default(uuid())
+  name      String   // E.g. "Mumbai 3BHK"
+  filters   Json     // Stores { minPrice, maxPrice, city, beds, etc. }
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  lastEmailSentAt DateTime? // For alert frequency
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- BOOKINGS & ESCROW ---
+model Booking {
+  id           String   @id @default(uuid())
+  status       String   @default("PENDING") // PENDING, PAID, CANCELLED, COMPLETED
+  amount       Decimal  @db.Decimal(12, 2)
+  
+  // Relations
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  
+  agentId      String
+  agent        User     @relation("AgentBookings", fields: [agentId], references: [id])
+  
+  propertyId   String
+  property     Property @relation(fields: [propertyId], references: [id])
+  
+  paymentId    String?  @unique // Simulated transaction ID
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // --- PROPERTIES ---
@@ -60,13 +108,13 @@ model Property {
   id          String        @id @default(uuid())
   slug        String        @unique // For SEO URLs
   title       String
-  description String        @db.Text
+  description String
   price       Decimal       @db.Decimal(15, 2)
   type        PropertyType
   listingType ListingType
   status      ListingStatus @default(DRAFT)
   
-  // Location (We will store manual fields + PostGIS sync separate)
+  // Location
   address     String
   city        String
   state       String
@@ -78,21 +126,70 @@ model Property {
   bedrooms    Int?
   bathrooms   Int?
   areaSqFt    Float
-  features    Json?         // Flexible features list
+  features    Json? // Real JSON support in Postgres
 
   // Relations
   agentId     String
   agent       User          @relation(fields: [agentId], references: [id])
   images      Media[]
   leads       Lead[]
+  bookings    Booking[]
+  priceHistory PriceHistory[]
+  taxHistory   TaxHistory[]
+  schools      School[]      // Many-to-Many relation with Schools
+  favoritedBy User[]    @relation("UserFavorites")
 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?     // Soft Delete Support
 
   @@index([city])
   @@index([price])
   @@index([type])
   @@index([status])
+  @@index([latitude, longitude]) // Compound index for geospatial lookups
+}
+
+
+
+// --- ZILLOW PARITY DATA MODELS ---
+
+model PriceHistory {
+  id         String   @id @default(uuid())
+  price      Decimal  @db.Decimal(15, 2)
+  event      String   // Listed, Sold, Price Change, Pending, Contingent
+  date       DateTime
+  source     String?  // MLS, Public Record
+  
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model TaxHistory {
+  id         String   @id @default(uuid())
+  year       Int
+  taxPaid    Decimal  @db.Decimal(12, 2)
+  assessment Decimal? @db.Decimal(15, 2) // Tax Assessed Value
+  
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model School {
+  id         String   @id @default(uuid())
+  name       String
+  address    String?
+  rating     Int      // 1-10 GreatSchools Rating
+  type       String   // Public, Private, Charter
+  level      String   // Elementary, Middle, High, PreK
+  distance   Float    // Distance from property in miles (Computed or stored)
+  
+  // Implicit many-to-many or specific relation depending on requirements.
+  // For simplicity, we can link schools to properties via a join table if needed,
+  // or just store "NearbySchools" as JSON on Property if we don't need a central School DB.
+  // Zillow likely has a central School DB and geospatial lookups.
+  // Let's create a Relation for now.
+  properties Property[]
 }
 
 // --- MEDIA (S3) ---
@@ -106,10 +203,27 @@ model Media {
   createdAt  DateTime @default(now())
 }
 
+
+enum LeadStatus {
+  PENDING   // Waiting for Admin Approval
+  APPROVED  // Visible to Agent
+  REJECTED  // Deleted or marked as spam
+  WON       // Deal closed, commission due
+  LOST      // Deal failed
+}
+
 // --- LEADS ---
 model Lead {
-  id         String   @id @default(uuid())
-  message    String   @db.Text
+  id         String     @id @default(uuid())
+  message    String
+  status     LeadStatus @default(PENDING)
+  isFlagged  Boolean    @default(false) // Flag if leakage (phone/email in message) is detected
+  adminNotes String?
+  
+  // Guest lead contact info (for non-logged-in users)
+  guestName  String?
+  guestEmail String?
+  
   userId     String?  // Optional: Guest leads
   user       User?    @relation(fields: [userId], references: [id])
   
@@ -120,4 +234,5 @@ model Lead {
   property   Property @relation(fields: [propertyId], references: [id])
 
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

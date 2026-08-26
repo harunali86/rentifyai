@@ -1,0 +1,17 @@
+{
+  "status": "init",
+  "scope": "codebase",
+  "type": "backend",
+  "localEndpoint": "http://localhost:4000/api/v1/",
+  "serverPort": 39125,
+  "executionArgs": {
+    "projectName": "RentifyAI",
+    "projectPath": "/home/harun/block/rentifyai/apps/api",
+    "testIds": [],
+    "additionalInstruction": "",
+    "envs": {
+      "API_KEY": "sk-user-hODSORRpvLlh9eZqB_ezcC70w1PeimFv2MnMHaFhUWJv2ux8Ej3Exa3XLa4qsPXqaS5MXI382CpSYNNi1ZlhQsgvkUCspweJDPSTryAdTK0YZe6HRcuX_kYiOaYundJYSe8"
+    }
+  },
+  "proxy": "http://0ef2db18-09d7-4451-8b2f-abc40dc2f338:KslrfLdUIGsEkwcwbT7xFOYcyQOrMHgq@tun.testsprite.com:8080"
+}

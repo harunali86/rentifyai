@@ -1,65 +1,86 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function HeroSection() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || "");
+    const [listingType, setListingType] = useState(searchParams.get('listingType') || "BUY");
+
+    const handleSearch = () => {
+        const params = new URLSearchParams();
+        if (searchTerm) params.append('search', searchTerm);
+        params.append('listingType', listingType === 'BUY' ? 'SALE' : listingType);
+        router.push(`/search?${params.toString()}`);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') handleSearch();
+    };
+
     return (
-        <div className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
-            {/* Background with Gradient Overlay */}
+        <section className="relative pt-32 pb-24 min-h-[600px] flex flex-col justify-center items-center">
+            {/* Background Image */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-brand-900/90 to-brand-800/80 z-10" />
                 <img
-                    src="https://images.unsplash.com/photo-1600596542815-e32c21216f31?q=80&w=2674&auto=format&fit=crop"
-                    alt="Luxury Real Estate"
+                    src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=2000"
+                    alt="Background"
                     className="w-full h-full object-cover"
                 />
+                <div className="absolute inset-0 bg-black/20" /> {/* Subtle Overlay */}
             </div>
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-                <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in-up">
-                    Discover Your <span className="text-brand-300">Dream Life</span>
+            <div className="relative z-10 max-w-4xl mx-auto px-4 text-center w-full">
+                {/* Hero Title */}
+                <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 tracking-tight drop-shadow-md">
+                    Find it. Tour it. Own it.
                 </h1>
-                <p className="text-xl md:text-2xl text-brand-100 max-w-2xl mx-auto mb-10 font-light">
-                    Seamlessly search thousands of premium listings or connect with top-tier agents in your area.
-                </p>
 
-                {/* Search Bar Container */}
-                <div className="bg-white p-4 rounded-xl shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4 animate-fade-in-up delay-100">
-                    <div className="flex-grow">
-                        <input
-                            type="text"
-                            placeholder="Search by City, Zip, or Neighborhood..."
-                            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 text-gray-900 placeholder:text-gray-400"
-                        />
+                {/* Search Container */}
+                <div className="max-w-2xl mx-auto">
+                    {/* Tabs: Buy / Rent / Sell */}
+                    <div className="flex w-fit mx-auto mb-1">
+                        {['BUY', 'RENT', 'SELL'].map((type) => (
+                            <button
+                                key={type}
+                                onClick={() => setListingType(type)}
+                                className={`px-6 py-3 text-sm font-bold transition-all rounded-t-lg ${listingType === type
+                                        ? 'bg-white text-[#006AFF]'
+                                        : 'bg-black/40 text-white hover:bg-black/60 backdrop-blur-sm'
+                                    }`}
+                            >
+                                {type.charAt(0) + type.slice(1).toLowerCase()}
+                            </button>
+                        ))}
                     </div>
-                    <div className="flex gap-2">
-                        <select className="px-4 py-3 rounded-lg border border-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
-                            <option>Buy</option>
-                            <option>Rent</option>
-                            <option>Sold</option>
-                        </select>
-                        <Button variant="premium" size="lg" className="w-full md:w-auto">
-                            <Search className="mr-2 w-5 h-5" />
-                            Search
+
+                    {/* Search Bar */}
+                    <div className="bg-white rounded-lg rounded-tl-none shadow-2xl flex items-center p-2">
+                        <div className="relative flex-grow">
+                            <input
+                                type="text"
+                                placeholder="Enter an address, neighborhood, city, or ZIP code"
+                                className="w-full px-4 py-3 bg-transparent text-gray-900 focus:outline-none placeholder:text-gray-500 text-lg"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            />
+                        </div>
+                        <Button
+                            onClick={handleSearch}
+                            className="bg-[#006AFF] hover:bg-[#0052CC] text-white rounded-md w-12 h-12 flex items-center justify-center shrink-0"
+                            aria-label="Search"
+                        >
+                            <Search className="w-6 h-6" />
                         </Button>
                     </div>
                 </div>
-
-                {/* Quick Stats */}
-                <div className="mt-12 flex justify-center gap-8 md:gap-16 text-brand-100/80">
-                    <div>
-                        <div className="text-3xl font-bold text-white">50k+</div>
-                        <div className="text-sm uppercase tracking-wider">Listings</div>
-                    </div>
-                    <div>
-                        <div className="text-3xl font-bold text-white">12k+</div>
-                        <div className="text-sm uppercase tracking-wider">Agents</div>
-                    </div>
-                    <div>
-                        <div className="text-3xl font-bold text-white">100+</div>
-                        <div className="text-sm uppercase tracking-wider">Cities</div>
-                    </div>
-                </div>
             </div>
-        </div>
+        </section>
     );
 }

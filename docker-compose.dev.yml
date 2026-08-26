@@ -1,0 +1,62 @@
+services:
+  # Database (Same as prod)
+  postgres:
+    image: postgres:15-alpine
+    container_name: rentify_db_dev
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: rentify_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+
+  # Backend API (Dev Mode - Hot Reload)
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+      target: builder # Use builder stage or a specific dev stage (simplified here to use node image directly)
+    image: node:20-alpine
+    container_name: rentify_api_dev
+    working_dir: /app
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules
+    command: npm run start:dev
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: "postgresql://user:password@postgres:5432/rentify_db?schema=public"
+      JWT_SECRET: "dev-secret-key"
+      PORT: 4000
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+    depends_on:
+      - postgres
+
+  # Frontend Web (Dev Mode - Hot Reload)
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      target: builder
+    image: node:20-alpine
+    container_name: rentify_web_dev
+    working_dir: /app
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:4000"
+      INTERNAL_API_URL: "http://api:4000/api/v1"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data_dev:

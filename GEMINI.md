@@ -1,0 +1,1 @@
+/home/harun/.gemini/GEMINI.md

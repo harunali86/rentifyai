@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AuthButtons } from "@/components/layout/AuthButtons";
 import { Home, Menu, Search, User } from "lucide-react";
 
 export function Navbar() {
@@ -35,13 +36,17 @@ export function Navbar() {
 
                     {/* Right Actions */}
                     <div className="hidden md:flex items-center gap-4">
-                        <Button variant="ghost" size="sm" className="gap-2">
-                            <Search className="w-4 h-4" />
-                            Search
-                        </Button>
+                        <Link href="/">
+                            <Button variant="ghost" size="sm" className="gap-2">
+                                <Search className="w-4 h-4" />
+                                Search
+                            </Button>
+                        </Link>
                         <div className="h-6 w-px bg-gray-200"></div>
-                        <Button variant="ghost" size="sm">Log In</Button>
-                        <Button variant="premium" size="sm">Post Property</Button>
+                        <AuthButtons />
+                        <Link href="/agent/post">
+                            <Button variant="premium" size="sm">Post Property</Button>
+                        </Link>
                     </div>
 
                     {/* Mobile Menu Button */}

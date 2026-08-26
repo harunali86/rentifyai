@@ -1,0 +1,42 @@
+{
+    "tech_stack": [
+        "TypeScript",
+        "NestJS",
+        "PostgreSQL",
+        "Prisma"
+    ],
+    "features": [
+        {
+            "name": "Auth API",
+            "description": "Authentication endpoints for users and agents.",
+            "files": [
+                "src/modules/auth/auth.controller.ts",
+                "src/modules/auth/auth.service.ts"
+            ]
+        },
+        {
+            "name": "Properties API",
+            "description": "Property management, search, and details.",
+            "files": [
+                "src/modules/properties/properties.controller.ts",
+                "src/modules/properties/properties.service.ts"
+            ]
+        },
+        {
+            "name": "Leads API",
+            "description": "Lead generation and management.",
+            "files": [
+                "src/modules/leads/leads.controller.ts",
+                "src/modules/leads/leads.service.ts"
+            ]
+        },
+        {
+            "name": "Users API",
+            "description": "User profile and favorites management.",
+            "files": [
+                "src/modules/users/users.controller.ts",
+                "src/modules/users/users.service.ts"
+            ]
+        }
+    ]
+}

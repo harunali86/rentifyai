@@ -1,0 +1,130 @@
+# RentifyAI - AI Assistant Global Rules
+
+> These rules apply to all AI coding assistants (Cursor, Windsurf, Codex, Copilot) working on this project.
+
+## 1. EXECUTION LOCK RULE (MANDATORY)
+
+Before making ANY code changes, you MUST:
+
+### Step 1: Understanding Check
+Respond with **"What I have understood"** including:
+- Current project state
+- What exactly is changing
+- What stays unchanged
+- Any assumptions
+
+### Step 2: Impact Analysis (for mid-project changes)
+Add **"Impact of this change"** covering:
+- What existing parts will break
+- What needs refactoring
+- What can be reused
+
+### Step 3: Proposed Plan
+Add **"How I plan to handle this change"** with:
+- Step-by-step approach
+- Order of operations
+- What you will NOT touch
+
+### Step 4: Permission Gate
+End with: **"Do you want me to proceed with this plan?"**
+
+**DO NOT execute until user replies "Proceed".**
+
+---
+
+## 2. ARCHITECTURE RULES (STRICT)
+
+### Clean Architecture Doctrine
+- **Controllers:** Traffic cops ONLY - routing + input validation via DTOs
+- **Services:** 100% of business logic lives here
+- **Guards/Middleware:** Auth, RBAC, Rate Limiting - nothing else
+
+### Database Rules
+- **Atomic Transactions:** Multi-table writes MUST use `Prisma.$transaction`
+- **Selective Fetching:** Always use `select`, never `SELECT *`
+- **Soft Deletes:** Use `deletedAt` for entities with relations
+- **Indexing:** Add indexes for columns used in WHERE clauses
+
+### API Standards
+- **Versioning:** All routes under `/api/v1/`
+- **Rate Limiting:** ThrottlerModule on all public endpoints
+- **Error Handling:** Global Exception Filter, no raw stack traces
+
+---
+
+## 3. CONTENT RULES
+
+### No Generic Data
+- **NEVER** use: John Doe, Jane Smith, johndoe@gmail.com, Lorem Ipsum, Acme Corp
+- **USE:** Realistic Indian names (Rahul Sharma, Priya Patel, Amit Kumar)
+
+### Form Placeholders
+- Use descriptive placeholders: "Enter your full name", NOT sample data
+- Demo data must look authentic for Indian market
+
+---
+
+## 4. PROJECT-SPECIFIC ENUMS
+
+### ListingType (Backend)
+```typescript
+enum ListingType {
+  SALE,   // Frontend: "For Sale"
+  RENT    // Frontend: "For Rent"
+}
+```
+
+### PropertyType (Backend)
+```typescript
+enum PropertyType {
+  RESIDENTIAL,   // Frontend: Apartment, Villa, Penthouse
+  COMMERCIAL,    // Frontend: Office
+  INDUSTRIAL,
+  LAND           // Frontend: Plot
+}
+```
+
+### ListingStatus Flow
+```
+DRAFT → PENDING → PUBLISHED → VERIFIED → SOLD/RENTED
+```
+
+---
+
+## 5. KNOWN ISSUES (DO NOT INTRODUCE)
+
+- Map bounds use `onBoundsUpdate` prop, not `onBoundsChange`
+- Property unlock requires Optional JWT Guard on `/properties/:slug`
+- Admin routes require full base URL + Authorization header
+
+---
+
+## 6. FILE STRUCTURE
+
+```
+rentifyai/
+├── apps/
+│   ├── api/        # NestJS Backend (Port 4000)
+│   └── web/        # Next.js Frontend (Port 3000)
+├── infra/          # Docker configs
+├── rentifyai.env   # Environment variables
+└── .cursorrules    # THIS FILE
+```
+
+---
+
+## 7. ENVIRONMENT
+
+- **Backend URL:** `http://localhost:4000/api/v1`
+- **Frontend URL:** `http://localhost:3000`
+- **Database:** PostgreSQL with PostGIS
+- **Storage:** Local (dev) or S3 (prod)
+
+---
+
+## 8. BEFORE COMMITTING
+
+1. Run `npm run lint` in both apps
+2. Run `npm test` in apps/api
+3. Test critical flows manually
+4. Update DEVELOPMENT_LOG.md if adding features

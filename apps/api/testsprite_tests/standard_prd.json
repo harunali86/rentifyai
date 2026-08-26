@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "project": "RentifyAI Real Estate Marketplace",
+    "date": "2026-01-31",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "RentifyAI is a comprehensive real estate marketplace application enabling users to buy, sell, and rent properties efficiently through a modern web platform with robust backend APIs and AI-driven features.",
+  "core_goals": [
+    "Provide seamless user authentication and role management for Users, Agents, and Admins.",
+    "Enable agents to manage property listings with detailed information and advanced search capabilities.",
+    "Enhance user engagement by allowing favorites, inquiries, bookings, and a personalized dashboard experience.",
+    "Offer an admin panel for monitoring, managing listings, and overseeing platform statistics with mobile support."
+  ],
+  "key_features": [
+    "User Authentication with registration, login, and JWT security supporting multiple roles (Users, Agents, Admins).",
+    "Property Management including creation, update, deletion, detailed property info, and AI-driven similar property recommendations.",
+    "Advanced Search functionality with filters for city, price range, and rent/sale type.",
+    "User Engagement tools such as saving favorites, sending lead inquiries, booking viewings/paying tokens, and a personalized 'My Zillow' dashboard.",
+    "Admin Panel providing platform statistics (revenue, active users, properties), listing approval management, and responsive mobile design."
+  ],
+  "user_flow_summary": [
+    "Users register/login and access the platform according to their roles.",
+    "Agents create and manage property listings including details and images.",
+    "Users browse, search, and filter properties, view details, save favorites, and send inquiries or booking requests to agents.",
+    "Admins access the admin panel to review stats, and approve or reject property listings, with mobile access capability."
+  ],
+  "validation_criteria": [
+    "Authentication endpoints securely manage user data and roles via JWT.",
+    "Property APIs support CRUD operations and return accurate, detailed listings.",
+    "Search filters return relevant results quickly and accurately.",
+    "User engagement features function properly: saving favorites, sending inquiries, and booking processes.",
+    "Admin panel displays correct statistics and allows effective management of listings with mobile responsiveness."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "TypeScript",
+      "NestJS",
+      "PostgreSQL",
+      "Prisma"
+    ],
+    "features": [
+      {
+        "name": "Auth API",
+        "description": "Authentication endpoints for users and agents.",
+        "files": [
+          "src/modules/auth/auth.controller.ts",
+          "src/modules/auth/auth.service.ts"
+        ]
+      },
+      {
+        "name": "Properties API",
+        "description": "Property management, search, and details.",
+        "files": [
+          "src/modules/properties/properties.controller.ts",
+          "src/modules/properties/properties.service.ts"
+        ]
+      },
+      {
+        "name": "Leads API",
+        "description": "Lead generation and management.",
+        "files": [
+          "src/modules/leads/leads.controller.ts",
+          "src/modules/leads/leads.service.ts"
+        ]
+      },
+      {
+        "name": "Users API",
+        "description": "User profile and favorites management.",
+        "files": [
+          "src/modules/users/users.controller.ts",
+          "src/modules/users/users.service.ts"
+        ]
+      }
+    ]
+  }
+}

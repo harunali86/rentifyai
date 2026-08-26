@@ -1,0 +1,48 @@
+services:
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: rentify_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: rentify_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Backend API (NestJS)
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: rentify_api
+    depends_on:
+      - postgres
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: "postgresql://user:password@postgres:5432/rentify_db?schema=public"
+      JWT_SECRET: "your-super-secret-jwt-key-change-in-prod"
+      PORT: 4000
+    restart: unless-stopped
+
+  # Frontend Web (Next.js)
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: rentify_web
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:4000"
+      INTERNAL_API_URL: "http://api:4000"
+      NODE_ENV: production
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
