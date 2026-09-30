@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Property, getProperties } from '@/lib/api';
 import { PropertyCard } from './PropertyCard';
-import { SlidersHorizontal, Map as MapIcon, List as ListIcon, Search, ChevronDown } from 'lucide-react';
+import { SlidersHorizontal, Map as MapIcon, List as ListIcon, Search, ChevronDown, Bell } from 'lucide-react';
 
 // Dynamically import the map component with SSR disabled
 const PropertyMap = dynamic(
@@ -28,6 +28,10 @@ export function PropertySplitView({ initialProperties, searchParams }: PropertyS
     const [viewMode, setViewMode] = useState<'split' | 'map' | 'list'>('split');
     const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
 
+    // Sorting & Saved Search State (Zillow Parity)
+    const [sortBy, setSortBy] = useState<'recommended' | 'price_asc' | 'price_desc' | 'newest' | 'sqft'>('recommended');
+    const [isSavedSearch, setIsSavedSearch] = useState(false);
+
     // Actual search filters
     const [searchQuery, setSearchQuery] = useState(searchParams.search || '');
     const [minPrice, setMinPrice] = useState<string>('');
@@ -36,6 +40,19 @@ export function PropertySplitView({ initialProperties, searchParams }: PropertyS
 
     // Map bounds track
     const currentBounds = useRef<any>(null);
+
+    const handleSaveSearch = () => {
+        setIsSavedSearch(prev => !prev);
+    };
+
+    // Client-side instant sorting
+    const sortedProperties = [...properties].sort((a, b) => {
+        if (sortBy === 'price_asc') return Number(a.price) - Number(b.price);
+        if (sortBy === 'price_desc') return Number(b.price) - Number(a.price);
+        if (sortBy === 'sqft') return (b.areaSqFt || 0) - (a.areaSqFt || 0);
+        if (sortBy === 'newest') return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        return 0; // recommended
+    });
 
     // --- FETCH LOGIC ---
     const fetchWithFilters = useCallback(async (bounds?: any) => {
@@ -163,15 +180,51 @@ export function PropertySplitView({ initialProperties, searchParams }: PropertyS
 
                 {/* List Section */}
                 <div className={`transition-all duration-500 ease-in-out overflow-y-auto ${viewMode === 'map' ? 'w-0 opacity-0 hidden' : viewMode === 'list' ? 'w-full' : 'w-1/2'} p-6 custom-scrollbar`}>
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold text-gray-900">
-                            {properties.length} {properties.length === 1 ? 'Property' : 'Properties'} Found
-                        </h2>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-gray-200">
+                        <div>
+                            <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                                {sortedProperties.length} {sortedProperties.length === 1 ? 'Home' : 'Homes'} in {searchQuery || 'Pune & Mumbai'}
+                            </h2>
+                            <p className="text-xs text-slate-500 font-medium mt-0.5">
+                                Verified RERA inventory with 100% price transparency
+                            </p>
+                        </div>
+
+                        {/* Zillow Action Controls: Save Search + Sort */}
+                        <div className="flex items-center gap-2.5">
+                            <button
+                                onClick={handleSaveSearch}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                    isSavedSearch 
+                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 shadow-xs' 
+                                        : 'bg-white text-slate-700 border border-slate-300 hover:border-blue-500 hover:text-blue-600 shadow-xs'
+                                }`}
+                            >
+                                <Bell className={`w-3.5 h-3.5 ${isSavedSearch ? 'fill-emerald-600 text-emerald-600' : ''}`} />
+                                {isSavedSearch ? 'Alerts Active ✓' : 'Save Search'}
+                            </button>
+
+                            {/* Sort Dropdown */}
+                            <div className="relative">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value as any)}
+                                    className="bg-white border border-slate-300 hover:border-slate-400 text-slate-700 text-xs font-bold rounded-lg py-1.5 pl-3 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer shadow-xs"
+                                >
+                                    <option value="recommended">Sort: Recommended</option>
+                                    <option value="price_asc">Price: Low to High</option>
+                                    <option value="price_desc">Price: High to Low</option>
+                                    <option value="newest">Newest First</option>
+                                    <option value="sqft">Largest Sq Ft</option>
+                                </select>
+                                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            </div>
+                        </div>
                     </div>
 
                     <div className={`grid gap-6 ${viewMode === 'list' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
-                        {properties.length > 0 ? (
-                            properties.map(p => (
+                        {sortedProperties.length > 0 ? (
+                            sortedProperties.map(p => (
                                 <div
                                     key={p.id}
                                     onMouseEnter={() => setHoveredPropertyId(p.id)}

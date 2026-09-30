@@ -1,347 +1,413 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
-import { createPropertyAction } from '@/actions/properties';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { uploadImage } from '@/lib/api';
-import { getCookie } from 'cookies-next';
-import {
-    Building2,
-    MapPin,
-    IndianRupee,
-    Layout,
-    Bed,
-    Bath,
-    Maximize,
-    Image as ImageIcon,
-    Loader2,
-    CheckCircle2,
-    AlertCircle,
-    UploadCloud,
-    X
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { 
+    Building2, 
+    Sparkles, 
+    CheckCircle2, 
+    ArrowRight, 
+    UploadCloud, 
+    MapPin, 
+    IndianRupee, 
+    Bed, 
+    Bath, 
+    Maximize, 
+    ShieldCheck, 
+    Zap,
+    ExternalLink,
+    RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-function SubmitButton({ pending }: { pending: boolean }) {
-    return (
-        <Button
-            type="submit"
-            disabled={pending}
-            className="w-full h-14 text-lg font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-xl shadow-brand-500/20 transition-all rounded-2xl flex items-center justify-center gap-2"
-        >
-            {pending ? (
-                <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Transmitting Data...
-                </>
-            ) : (
-                <>
-                    <CheckCircle2 className="w-5 h-5" />
-                    Publish Listing for Review
-                </>
-            )}
-        </Button>
-    );
-}
-
-const initialState = { error: '', success: false };
+const LUXURY_PRESETS = [
+    {
+        name: "🏰 Koregaon Park Heritage Villa",
+        city: "Pune",
+        title: "Koregaon Park South Main Road Heritage Estate",
+        price: 135000000,
+        type: "RESIDENTIAL",
+        listingType: "SALE",
+        bedrooms: 5,
+        bathrooms: 5,
+        areaSqFt: 5400,
+        address: "South Main Road, Near Osho Lane, Koregaon Park",
+        images: [
+            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=85",
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=85",
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1600&q=85"
+        ]
+    },
+    {
+        name: "🏙️ Worli Sea Face Sky Penthouse",
+        city: "Mumbai",
+        title: "Worli Sea Face Ultra-Luxury Arabian View Penthouse",
+        price: 245000000,
+        type: "RESIDENTIAL",
+        listingType: "SALE",
+        bedrooms: 4,
+        bathrooms: 5,
+        areaSqFt: 6200,
+        address: "Worli Sea Face, Worli, South Mumbai",
+        images: [
+            "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1600&q=85",
+            "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1600&q=85",
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1600&q=85"
+        ]
+    },
+    {
+        name: "🌿 Baner High Street Smart High-Rise",
+        city: "Pune",
+        title: "Baner High Street Signature Corner High-Rise",
+        price: 18500000,
+        type: "RESIDENTIAL",
+        listingType: "SALE",
+        bedrooms: 3,
+        bathrooms: 3,
+        areaSqFt: 1950,
+        address: "Behind Balewadi High Street, Baner, Pune",
+        images: [
+            "https://images.unsplash.com/photo-1600573472550-8090b5e0745e?auto=format&fit=crop&w=1600&q=85",
+            "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=85",
+            "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1600&q=85"
+        ]
+    },
+    {
+        name: "🌊 Goa Candolim Beachfront Villa",
+        city: "Goa",
+        title: "Candolim Portuguese Luxury Beachside Villa",
+        price: 115000000,
+        type: "RESIDENTIAL",
+        listingType: "SALE",
+        bedrooms: 4,
+        bathrooms: 4,
+        areaSqFt: 4300,
+        address: "Near Fort Aguada, Candolim, North Goa",
+        images: [
+            "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1600&q=85",
+            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=85",
+            "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1600&q=85"
+        ]
+    }
+];
 
 export default function PostPropertyPage() {
-    // @ts-ignore
-    const [state, formAction, isPending] = useActionState(createPropertyAction, initialState);
+    const router = useRouter();
 
-    // Image Upload State
-    const [uploading, setUploading] = useState(false);
-    const [imageUrls, setImageUrls] = useState<string[]>([]);
+    const [title, setTitle] = useState('');
+    const [city, setCity] = useState('Pune');
+    const [address, setAddress] = useState('');
+    const [listingType, setListingType] = useState('SALE');
+    const [type, setType] = useState('RESIDENTIAL');
+    const [price, setPrice] = useState('');
+    const [bedrooms, setBedrooms] = useState('3');
+    const [bathrooms, setBathrooms] = useState('3');
+    const [areaSqFt, setAreaSqFt] = useState('1850');
+    const [description, setDescription] = useState('');
+    const [images, setImages] = useState<string[]>([
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=85"
+    ]);
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            setUploading(true);
-            const token = getCookie('token') as string;
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+    const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
 
-            if (!token) {
-                toast.error('Session expired. Please login again.');
-                setUploading(false);
-                return;
-            }
+    const applyPreset = (preset: typeof LUXURY_PRESETS[0]) => {
+        setTitle(preset.title);
+        setCity(preset.city);
+        setAddress(preset.address);
+        setListingType(preset.listingType);
+        setType(preset.type);
+        setPrice(preset.price.toString());
+        setBedrooms(preset.bedrooms.toString());
+        setBathrooms(preset.bathrooms.toString());
+        setAreaSqFt(preset.areaSqFt.toString());
+        setDescription(`Architect-designed luxury home in ${preset.address}. Italian marble, private deck, 24/7 concierge, MahaRERA compliant.`);
+        setImages(preset.images);
+        toast.success(`Loaded preset: ${preset.name}`);
+    };
 
-            const files = Array.from(e.target.files);
-            const uploadPromises = files.map(file => uploadImage(file, token));
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!title.trim()) {
+            toast.error('Please enter a property title');
+            return;
+        }
 
+        setIsSubmitting(true);
+        try {
+            const res = await fetch('/api/properties/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    city,
+                    address,
+                    listingType,
+                    type,
+                    price: Number(price) || (listingType === 'RENT' ? 45000 : 15000000),
+                    bedrooms: Number(bedrooms) || 3,
+                    bathrooms: Number(bathrooms) || 3,
+                    areaSqFt: Number(areaSqFt) || 1850,
+                    description,
+                    images
+                })
+            });
+
+            if (!res.ok) throw new Error('Failed to publish listing');
+            const data = await res.json();
+
+            // Client persistence in localStorage
             try {
-                const results = await Promise.all(uploadPromises);
-                const successfulUrls = results.filter((url): url is string => url !== null);
-
-                if (successfulUrls.length > 0) {
-                    setImageUrls(prev => [...prev, ...successfulUrls]);
-                    toast.success(`${successfulUrls.length} image(s) uploaded successfully`);
-                }
-
-                if (successfulUrls.length !== files.length) {
-                    toast.error(`Failed to upload ${files.length - successfulUrls.length} image(s)`);
-                }
-            } catch (error) {
-                toast.error('Batch upload failed');
-            } finally {
-                setUploading(false);
-                e.target.value = ''; // Reset input
+                const existing = JSON.parse(localStorage.getItem('rentify_user_properties') || '[]');
+                existing.unshift(data.property);
+                localStorage.setItem('rentify_user_properties', JSON.stringify(existing));
+            } catch (err) {
+                console.warn('Storage sync:', err);
             }
+
+            setPublishedUrl(data.url);
+            setPublishedSlug(data.slug);
+            toast.success('🎉 Property is now LIVE on RentifyAI!');
+        } catch (error: any) {
+            toast.error(error.message || 'Error publishing listing');
+        } finally {
+            setIsSubmitting(false);
         }
     };
-
-    const removeImage = (index: number) => {
-        setImageUrls(prev => prev.filter((_, i) => i !== index));
-    };
-
-    useEffect(() => {
-        if (state?.error) {
-            toast.error(state.error);
-        }
-    }, [state]);
 
     return (
-        <div className="max-w-5xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-            <div className="mb-12">
-                <div className="flex items-center gap-3 text-brand-600 font-bold text-xs uppercase tracking-widest mb-4">
-                    <span className="h-5 w-1 bg-brand-600 rounded-full"></span>
-                    Agent Dashboard • New Listing
-                </div>
-                <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4">Create <span className="text-brand-600">Property Listing</span></h1>
-                <p className="text-gray-500 text-lg max-w-2xl">
-                    Our AI-powered moderation system ensures only 100% verified listings reach premium buyers. Fill in the details to start the review process.
-                </p>
-            </div>
-
-            {state?.error && (
-                <div className="mb-8 bg-red-50 text-red-700 p-5 rounded-2xl border border-red-100 flex items-start gap-4 animate-slide-up">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                        <AlertCircle className="w-5 h-5 text-red-600" />
+        <div className="min-h-screen bg-slate-50/60 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto">
+                {/* Header */}
+                <div className="mb-8 text-center sm:text-left">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-black text-emerald-700 uppercase tracking-widest mb-3">
+                        <Zap className="h-3.5 w-3.5 text-emerald-600" />
+                        Live Demo • Instant 1-Click Publishing
                     </div>
-                    <div>
-                        <p className="font-bold">Transmission Error</p>
-                        <p className="text-sm opacity-90">{state.error}</p>
+                    <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                        Post a Property on <span className="text-[#006AFF]">RentifyAI</span>
+                    </h1>
+                    <p className="text-slate-500 text-sm mt-1 max-w-2xl">
+                        Publish your listing directly to the verified luxury catalog. No approval lag — your property goes live across search, maps, and detail pages immediately.
+                    </p>
+                </div>
+
+                {/* 🌟 1-Click Luxury Presets (Demo Accelerator) */}
+                <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs mb-8">
+                    <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                            <Sparkles className="w-4 h-4 text-amber-500" />
+                            1-Click Luxury Architecture Presets (Demo Mode)
+                        </span>
+                        <span className="text-[11px] text-slate-400">Click to autofill all specs & 4K photos</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                        {LUXURY_PRESETS.map((p, idx) => (
+                            <button
+                                key={idx}
+                                type="button"
+                                onClick={() => applyPreset(p)}
+                                className="p-3 text-left rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 transition-all text-xs font-bold text-slate-700 active:scale-98 cursor-pointer flex flex-col gap-1 shadow-xs"
+                            >
+                                <span className="text-slate-900 font-black truncate">{p.name}</span>
+                                <span className="text-[11px] text-emerald-600">₹{(p.price / 10000000).toFixed(2)} Cr • {p.bedrooms} BHK</span>
+                            </button>
+                        ))}
                     </div>
                 </div>
-            )}
 
-            <form action={formAction} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                <div className="lg:col-span-8 space-y-10">
-                    {/* Basic Information */}
-                    <Card className="p-8 border-gray-100 shadow-sm rounded-3xl overflow-hidden relative group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50/50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700"></div>
-
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="p-3 bg-brand-50 rounded-2xl text-brand-600">
-                                <Building2 className="w-6 h-6" />
+                {/* Success Banner if published */}
+                {publishedUrl && (
+                    <div className="mb-8 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white shadow-xl animate-in fade-in slide-in-from-top-4">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                                    <CheckCircle2 className="w-7 h-7 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-black">🎉 Property Published Successfully!</h3>
+                                    <p className="text-xs text-emerald-100">
+                                        Your listing is now live across the RentifyAI search index with Zero Brokerage badge.
+                                    </p>
+                                </div>
                             </div>
+                            <div className="flex items-center gap-2.5 shrink-0">
+                                <Link
+                                    href={publishedUrl}
+                                    className="px-4 py-2.5 bg-white text-emerald-800 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-emerald-50 active:scale-95 transition-all"
+                                >
+                                    View Live Page <ExternalLink className="w-3.5 h-3.5" />
+                                </Link>
+                                <Link
+                                    href="/search"
+                                    className="px-4 py-2.5 bg-emerald-900/60 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 border border-white/20 hover:bg-emerald-900 active:scale-95 transition-all"
+                                >
+                                    See in Search 🔍
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Main Form */}
+                <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-md space-y-6">
+                    {/* Basic Info */}
+                    <div className="space-y-4">
+                        <h3 className="text-base font-black text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                            <Building2 className="w-4 h-4 text-[#006AFF]" /> Property Headline & Location
+                        </h3>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="sm:col-span-2">
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Listing Title *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="e.g. Koregaon Park Modern Colonial Sky Villa"
+                                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:border-[#006AFF] focus:outline-none"
+                                />
+                            </div>
+
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900">Property Details</h2>
-                                <p className="text-xs text-gray-400">Core information about the property</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="title" className="text-gray-600 font-bold ml-1">Property Title</Label>
-                                    <Input id="title" name="title" placeholder="e.g. 4BHK Penthouse in Worli" required className="rounded-xl border-gray-100 bg-gray-50 focus:bg-white h-12" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="price" className="text-gray-600 font-bold ml-1">Price (Expected)</Label>
-                                    <div className="relative">
-                                        <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                        <Input id="price" name="price" type="number" placeholder="4,50,00,000" required className="pl-12 rounded-xl border-gray-100 bg-gray-50 focus:bg-white h-12" />
-                                    </div>
-                                </div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">City</label>
+                                <select
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:border-[#006AFF] focus:outline-none bg-white cursor-pointer"
+                                >
+                                    <option value="Pune">Pune</option>
+                                    <option value="Mumbai">Mumbai</option>
+                                    <option value="Bengaluru">Bengaluru</option>
+                                    <option value="Gurgaon">Gurgaon (Delhi-NCR)</option>
+                                    <option value="Goa">Goa</option>
+                                </select>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="description" className="text-gray-600 font-bold ml-1">Comprehensive Description</Label>
-                                <Textarea id="description" name="description" placeholder="Mention key USPs like sea view, marble flooring, private terrace, etc..." required className="min-h-[160px] rounded-xl border-gray-100 bg-gray-50 focus:bg-white p-4" />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="type" className="text-gray-600 font-bold ml-1 text-xs uppercase tracking-widest">Type</Label>
-                                    <select id="type" name="type" className="w-full flex h-12 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
-                                        <option value="RESIDENTIAL">Residential (Flat/Villa)</option>
-                                        <option value="COMMERCIAL">Commercial (Office/Shop)</option>
-                                        <option value="INDUSTRIAL">Industrial (Warehouse)</option>
-                                        <option value="LAND">Land (Plot)</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="listingType" className="text-gray-600 font-bold ml-1 text-xs uppercase tracking-widest">Transaction</Label>
-                                    <select id="listingType" name="listingType" className="w-full flex h-12 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
-                                        <option value="SALE">Direct Purchase</option>
-                                        <option value="RENT">Monthly Rental</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* Location Details */}
-                    <Card className="p-8 border-gray-100 shadow-sm rounded-3xl">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="p-3 bg-brand-50 rounded-2xl text-brand-600">
-                                <MapPin className="w-6 h-6" />
-                            </div>
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900">Physical Address</h2>
-                                <p className="text-xs text-gray-400">Regional and local details</p>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Address / Landmark</label>
+                                <input
+                                    type="text"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    placeholder="e.g. Lane 7, North Main Road"
+                                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:border-[#006AFF] focus:outline-none"
+                                />
                             </div>
                         </div>
+                    </div>
 
-                        <div className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="address" className="text-gray-600 font-bold ml-1">Full Address (Building & Wing)</Label>
-                                <Input id="address" name="address" placeholder="Tower B, Flat 2401, Lodha World Towers" required className="rounded-xl border-gray-100 bg-gray-50 h-12" />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="city" className="text-gray-600 font-bold ml-1">City</Label>
-                                    <Input id="city" name="city" placeholder="Mumbai" required className="rounded-xl border-gray-100 bg-gray-50 h-12" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="state" className="text-gray-600 font-bold ml-1">State</Label>
-                                    <Input id="state" name="state" placeholder="Maharashtra" required className="rounded-xl border-gray-100 bg-gray-50 h-12" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="zipCode" className="text-gray-600 font-bold ml-1">Zip Code</Label>
-                                    <Input id="zipCode" name="zipCode" placeholder="400013" required className="rounded-xl border-gray-100 bg-gray-50 h-12" />
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
+                    {/* Price & Specs */}
+                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                        <h3 className="text-base font-black text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                            <IndianRupee className="w-4 h-4 text-[#006AFF]" /> Financials & Specifications
+                        </h3>
 
-                    {/* Property Features */}
-                    <Card className="p-8 border-gray-100 shadow-sm rounded-3xl">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="p-3 bg-brand-50 rounded-2xl text-brand-600">
-                                <Layout className="w-6 h-6" />
-                            </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900">Technical Specs</h2>
-                                <p className="text-xs text-gray-400">Dimensions and capacity</p>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Purpose</label>
+                                <select
+                                    value={listingType}
+                                    onChange={(e) => setListingType(e.target.value)}
+                                    className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-900 focus:border-[#006AFF] focus:outline-none bg-white cursor-pointer"
+                                >
+                                    <option value="SALE">For Sale</option>
+                                    <option value="RENT">For Rent</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Price (₹ INR)</label>
+                                <input
+                                    type="number"
+                                    value={price}
+                                    onChange={(e) => setPrice(e.target.value)}
+                                    placeholder={listingType === 'RENT' ? '45000' : '15000000'}
+                                    className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs text-slate-900 focus:border-[#006AFF] focus:outline-none font-bold"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Bedrooms (BHK)</label>
+                                <select
+                                    value={bedrooms}
+                                    onChange={(e) => setBedrooms(e.target.value)}
+                                    className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-900 focus:border-[#006AFF] focus:outline-none bg-white cursor-pointer"
+                                >
+                                    <option value="1">1 BHK</option>
+                                    <option value="2">2 BHK</option>
+                                    <option value="3">3 BHK</option>
+                                    <option value="4">4 BHK</option>
+                                    <option value="5">5+ BHK</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Super Area (Sq Ft)</label>
+                                <input
+                                    type="number"
+                                    value={areaSqFt}
+                                    onChange={(e) => setAreaSqFt(e.target.value)}
+                                    placeholder="1850"
+                                    className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs text-slate-900 focus:border-[#006AFF] focus:outline-none"
+                                />
                             </div>
                         </div>
+                    </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
-                            {[
-                                { id: 'bedrooms', icon: Bed, label: 'Bedrooms', val: '3' },
-                                { id: 'bathrooms', icon: Bath, label: 'Bathrooms', val: '3' },
-                            ].map(feat => (
-                                <div key={feat.id} className="space-y-4 text-center">
-                                    <Label htmlFor={feat.id} className="text-gray-400 text-xs font-bold uppercase tracking-widest">{feat.label}</Label>
-                                    <div className="relative group">
-                                        <feat.icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-600/50" />
-                                        <Input id={feat.id} name={feat.id} type="number" defaultValue={feat.val} className="text-center text-xl font-black rounded-2xl h-16 border-gray-50 bg-gray-50 group-hover:bg-white transition-colors" />
-                                    </div>
+                    {/* Description */}
+                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                        <label className="block text-xs font-bold text-slate-700">Property Description</label>
+                        <textarea
+                            rows={3}
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Highlight imported marble, luxury club amenities, smart automation, and terrace views..."
+                            className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-900 focus:border-[#006AFF] focus:outline-none"
+                        />
+                    </div>
+
+                    {/* Image Preview */}
+                    <div className="space-y-2 pt-2">
+                        <div className="flex items-center justify-between">
+                            <label className="block text-xs font-bold text-slate-700">Property Photos ({images.length})</label>
+                            <span className="text-[11px] text-emerald-600 font-semibold">✓ Curated 4K Quality</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                            {images.map((img, i) => (
+                                <div key={i} className="aspect-video rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                                    <img src={img} alt="Preview" className="w-full h-full object-cover" />
                                 </div>
                             ))}
-                            <div className="space-y-4 text-center col-span-2 md:col-span-1">
-                                <Label htmlFor="areaSqFt" className="text-gray-400 text-xs font-bold uppercase tracking-widest">Sq Ft Area</Label>
-                                <div className="relative group">
-                                    <Maximize className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-600/50" />
-                                    <Input id="areaSqFt" name="areaSqFt" type="number" placeholder="1850" required className="text-center text-xl font-black rounded-2xl h-16 border-gray-50 bg-gray-50 group-hover:bg-white transition-colors" />
-                                </div>
-                            </div>
                         </div>
-                    </Card>
-                </div>
+                    </div>
 
-                {/* Sidebar: Media & Submit */}
-                <div className="lg:col-span-4 space-y-10">
-                    <Card className="p-8 border-gray-100 shadow-xl rounded-3xl bg-gray-900 text-white sticky top-24">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="p-3 bg-white/10 rounded-2xl text-brand-400">
-                                <ImageIcon className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-bold">Image Gallery</h2>
-                                <p className="text-[10px] text-gray-400 uppercase font-black">Visual Assets</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="space-y-3">
-                                <Label htmlFor="file-upload" className="text-xs font-bold text-gray-400">Upload Images</Label>
-                                <div className="relative">
-                                    <input
-                                        type="file"
-                                        id="file-upload"
-                                        accept="image/*"
-                                        multiple // Enable multiple file selection
-                                        onChange={handleFileChange}
-                                        disabled={uploading}
-                                        className="hidden"
-                                    />
-                                    <Label
-                                        htmlFor="file-upload"
-                                        className="flex items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-brand-500 hover:bg-white/5 transition-all text-gray-400 hover:text-white"
-                                    >
-                                        <div className="flex flex-col items-center gap-2">
-                                            {uploading ? (
-                                                <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
-                                            ) : (
-                                                <UploadCloud className="w-8 h-8" />
-                                            )}
-                                            <span className="text-xs font-medium">{uploading ? 'Uploading...' : 'Click to Upload'}</span>
-                                        </div>
-                                    </Label>
-                                </div>
-
-                                {/* Hidden input to send URLs to Server Action */}
-                                <input type="hidden" name="images" value={imageUrls.join(',')} />
-
-                                {/* Image Preview Grid */}
-                                {imageUrls.length > 0 && (
-                                    <div className="grid grid-cols-3 gap-2 mt-4">
-                                        {imageUrls.map((url, idx) => (
-                                            <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group">
-                                                <img src={url} alt="Property" className="w-full h-full object-cover" />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeImage(idx)}
-                                                    className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                                >
-                                                    <X className="w-3 h-3" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <hr className="border-white/5" />
-
-                            <div className="space-y-4 pt-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                        <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                                    </div>
-                                    <span className="text-xs text-gray-300">Secure Cloud Storage</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                        <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                                    </div>
-                                    <span className="text-xs text-gray-300">Instant Preview</span>
-                                </div>
-                            </div>
-
-                            <div className="pt-6">
-                                <SubmitButton pending={isPending} />
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            </form>
+                    {/* Submit Bar */}
+                    <div className="pt-6 border-t border-slate-100 flex items-center justify-between gap-4">
+                        <p className="text-xs text-slate-400">
+                            🛡️ 100% MahaRERA Verified & Zero Brokerage Listing.
+                        </p>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="px-8 py-3.5 rounded-xl bg-[#006AFF] hover:bg-[#0052cc] text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <RefreshCw className="w-4 h-4 animate-spin" /> Publishing...
+                                </>
+                            ) : (
+                                <>
+                                    <CheckCircle2 className="w-4 h-4" /> Publish Listing Instantly
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

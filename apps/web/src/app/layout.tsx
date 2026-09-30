@@ -28,6 +28,7 @@ export const metadata: Metadata = {
 import { AuthProvider } from "@/context/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Toaster } from "sonner";
+import { AiAdvisorDrawer } from "@/components/ai/AiAdvisorDrawer";
 
 export default function RootLayout({
   children,
@@ -42,6 +43,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <AuthModal />
+          <AiAdvisorDrawer />
           <Toaster position="top-center" richColors />
         </AuthProvider>
       </body>

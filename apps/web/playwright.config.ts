@@ -16,13 +16,19 @@ export default defineConfig({
         baseURL: 'http://localhost:3000',
         trace: 'retain-on-failure',
         screenshot: 'only-on-failure',
-        video: 'retain-on-failure',
+        video: 'off',
     },
 
     projects: [
         {
             name: 'chromium',
-            use: { ...devices['Desktop Chrome'] },
+            use: { 
+                ...devices['Desktop Chrome'],
+                channel: 'chrome',
+                launchOptions: {
+                    slowMo: 300,
+                },
+            },
         },
     ],
 

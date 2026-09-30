@@ -66,3 +66,16 @@
 .animate-slide-up {
   animation: slide-up 0.8s ease-out forwards;
 }
+
+/* Leaflet Custom Div Icon Resets */
+.leaflet-div-icon,
+.custom-div-icon,
+.custom-cluster-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-cluster-icon div {
+  background-color: #006AFF !important;
+  box-shadow: 0 4px 14px rgba(0, 106, 255, 0.4);
+}

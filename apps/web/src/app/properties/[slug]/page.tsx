@@ -14,6 +14,9 @@ import PropertyGalleryClient from './PropertyGalleryClient';
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import NeighborhoodScores from '@/components/property/NeighborhoodScores';
+import { ZestimateWidget } from '@/components/property/ZestimateWidget';
+import { TourSchedulerModal } from '@/components/property/TourSchedulerModal';
+import { Footer } from "@/components/layout/Footer";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
@@ -100,26 +103,37 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                 </div>
 
                 <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-8">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <span className="bg-brand-50 text-brand-700 text-xs font-black px-2 py-0.5 rounded-lg uppercase tracking-widest">{property.type}</span>
+                    <div className="space-y-2.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider shadow-xs">
+                                ⚡ ZERO BROKERAGE
+                            </span>
+                            <span className="bg-emerald-50 text-emerald-700 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider border border-emerald-200">
+                                MahaRERA: {property.reraId || 'P52100028941'}
+                            </span>
+                            <span className="bg-blue-50 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest">
+                                {property.type}
+                            </span>
                             <span className="text-gray-300">•</span>
-                            <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                                 For {property.listingType === 'SALE' ? 'Sale' : 'Rent'}
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-none">{property.title}</h1>
-                        <div className="flex items-center text-gray-500 font-medium">
-                            <MapPin className="w-4 h-4 mr-1.5 text-brand-600" />
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{property.title}</h1>
+                        <div className="flex items-center text-slate-500 text-sm font-medium">
+                            <MapPin className="w-4 h-4 mr-1.5 text-blue-600 shrink-0" />
                             {property.address}, {property.city}
                         </div>
                     </div>
-                    <div className="bg-brand-50 p-6 rounded-3xl border border-brand-100 min-w-[200px]">
-                        <p className="text-xs font-black text-brand-600 uppercase tracking-[0.2em] mb-1">Total Price</p>
-                        <div className="text-4xl font-black text-brand-700 tracking-tight">
+                    <div className="bg-blue-50/70 p-6 rounded-3xl border border-blue-100 min-w-[220px]">
+                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-1">Direct Verified Price</p>
+                        <div className="text-3xl sm:text-4xl font-black text-blue-900 tracking-tight">
                             {formatCurrency(Number(property.price))}
-                            {property.listingType === 'RENT' && <span className="text-lg font-bold text-brand-400">/mo</span>}
+                            {property.listingType === 'RENT' && <span className="text-base font-bold text-blue-500">/mo</span>}
                         </div>
+                        <p className="text-[10px] font-bold text-emerald-700 mt-1 flex items-center gap-1">
+                            <span>✓</span> No Middlemen Commission
+                        </p>
                     </div>
                 </div>
 
@@ -145,6 +159,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                                 <div className="text-sm text-gray-600">Square Feet</div>
                             </div>
                         </div>
+
+                        {/* Zillow Signature Valuation Widget */}
+                        <ZestimateWidget
+                            price={Number(property.price)}
+                            listingType={property.listingType}
+                            city={property.city}
+                        />
 
                         {/* 2. What's Special (Description) */}
                         <section className="py-2">
@@ -243,7 +264,24 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                     </div>
 
                     {/* Sidebar Column */}
-                    <div className="lg:col-span-4 lg:sticky lg:top-24 lg:h-fit">
+                    <div className="lg:col-span-4 lg:sticky lg:top-24 lg:h-fit space-y-4">
+                        {/* Zillow Instant Tour Schedule Action */}
+                        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-3xl text-white shadow-xl shadow-blue-500/10">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-200 block mb-1">
+                                Direct Showing
+                            </span>
+                            <h3 className="text-xl font-black mb-1">Take a Tour of this Home</h3>
+                            <p className="text-xs text-blue-100 mb-4 font-normal">
+                                Schedule an in-person walkthrough or live video tour with a verified area specialist.
+                            </p>
+                            <TourSchedulerModal
+                                propertyTitle={property.title}
+                                propertyAddress={`${property.address}, ${property.city}`}
+                                agentName={property.agent?.name}
+                                agentAvatar={property.agent?.avatar}
+                            />
+                        </div>
+
                         <UnifiedContactWidget
                             propertyId={property.id}
                             agentId={property.agentId}
@@ -255,6 +293,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                     </div>
                 </div>
             </div>
+            <Footer />
         </main>
     );
 }

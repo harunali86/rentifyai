@@ -6,23 +6,20 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import L from 'leaflet';
 import { Property } from '@/lib/api';
 
-// Mumbai center
-const DEFAULT_CENTER: [number, number] = [19.0760, 72.8777];
+// Pune Center (Koregaon Park / Kalyani Nagar)
+const DEFAULT_CENTER: [number, number] = [18.5362, 73.8924];
 
 // Fix for default marker icon issue in Leaflet + Next.js
 const createCustomIcon = (price: string, isHovered: boolean) => {
     return L.divIcon({
         className: 'custom-div-icon',
         html: `
-      <div class="cursor-pointer px-2 py-1 rounded-full text-[10px] font-bold border-2 transition-all duration-200 transform
-        ${isHovered
-                ? 'bg-brand-600 text-white border-brand-700 scale-125 z-[1000] shadow-xl'
-                : 'bg-white text-gray-900 border-gray-200 hover:border-brand-500 hover:scale-110 z-[500] shadow-md'}">
-        ₹${price}
+      <div style="cursor: pointer; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.18); border: ${isHovered ? '2px solid #0052cc' : '1px solid #d1d5db'}; background-color: ${isHovered ? '#006AFF' : '#ffffff'}; color: ${isHovered ? '#ffffff' : '#111827'}; transform: ${isHovered ? 'scale(1.2)' : 'scale(1)'}; transition: all 0.2s ease; z-index: ${isHovered ? 1000 : 500};">
+        ${price}
       </div>
     `,
-        iconSize: [40, 20],
-        iconAnchor: [20, 10],
+        iconSize: [76, 28],
+        iconAnchor: [38, 14],
     });
 };
 
@@ -171,11 +168,14 @@ export function PropertyMap({ properties, onBoundsChange, hoveredPropertyId, onM
 
                 <MarkerClusterGroup
                     chunkedLoading
+                    maxClusterRadius={35}
+                    spiderfyOnMaxZoom={true}
                     iconCreateFunction={(cluster: any) => {
                         return L.divIcon({
-                            html: `<div class="bg-brand-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-white shadow-lg text-sm">${cluster.getChildCount()}</div>`,
+                            html: `<div style="background-color: #006AFF; color: #ffffff; font-weight: 700; border-radius: 9999px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 2px solid #ffffff; box-shadow: 0 4px 14px rgba(0, 106, 255, 0.45); font-size: 13px;">${cluster.getChildCount()}</div>`,
                             className: 'custom-cluster-icon',
                             iconSize: [32, 32],
+                            iconAnchor: [16, 16],
                         });
                     }}
                 >

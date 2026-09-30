@@ -36,7 +36,7 @@ export function Navbar() {
 
                     {/* Right Actions */}
                     <div className="hidden md:flex items-center gap-4">
-                        <Link href="/">
+                        <Link href="/search">
                             <Button variant="ghost" size="sm" className="gap-2">
                                 <Search className="w-4 h-4" />
                                 Search

@@ -2,6 +2,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeaturedCarousel } from "@/components/home/FeaturedCarousel";
 import { ActionCards } from "@/components/home/ActionCards";
+import { Footer } from "@/components/layout/Footer";
 import { getProperties } from "@/lib/api";
 
 export default async function Home({
@@ -36,6 +37,9 @@ export default async function Home({
           </p>
         </div>
       </section>
+
+      {/* 5. Zillow-Grade Footer */}
+      <Footer />
     </main>
   );
 }
