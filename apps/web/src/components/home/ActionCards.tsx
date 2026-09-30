@@ -16,24 +16,39 @@ import {
 const actionCards = [
     {
         title: "Buy a home",
-        description: "Find your dream luxury residence with RERA-verified titles, 3D floor plans, and expert on-ground advisors.",
+        subtitle: "Verified Luxury Residences & Villas",
+        description: "Find your dream luxury residence with RERA-verified clear titles, 3D interactive floor plans, and expert on-ground advisors.",
         cta: "Browse Properties",
         href: "/buy",
         icon: Home,
+        badge: "RERA VERIFIED",
+        badgeColor: "bg-emerald-600",
+        image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop",
+        features: ["100% Clear Title Guarantee", "3D Interactive Floor Plans", "MahaRERA Certified Advisors"]
     },
     {
         title: "Rent a home",
-        description: "Explore 100% verified rentals with Zero Brokerage, direct owner contact, and instant digital move-in.",
+        subtitle: "Direct Owner Rentals & Penthouses",
+        description: "Explore 100% verified rentals with Zero Brokerage, direct owner contact on WhatsApp, and instant digital move-in agreements.",
         cta: "Find Rentals",
         href: "/rent",
         icon: Key,
+        badge: "ZERO BROKERAGE",
+        badgeColor: "bg-blue-600",
+        image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1000&auto=format&fit=crop",
+        features: ["Direct Owner WhatsApp Access", "Biometric Aadhaar e-Agreement", "Zero Middlemen Markups"]
     },
     {
         title: "Sell a home",
-        description: "Get real-time Rentify Zestimate® valuation and connect directly with high-net-worth buyers in Pune & Mumbai.",
-        cta: "See Your Options",
+        subtitle: "Instant Valuation & Elite Buyers",
+        description: "Get real-time Rentify Zestimate® valuation and connect directly with high-net-worth verified buyers in Pune & Mumbai.",
+        cta: "Post Your Property",
         href: "/agent/post",
         icon: Building2,
+        badge: "FREE AI ZESTIMATE®",
+        badgeColor: "bg-amber-600",
+        image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1000&auto=format&fit=crop",
+        features: ["Instant AI Valuation Report", "4,500+ Qualified Active Buyers", "1-Click Instant Listing Live"]
     },
 ];
 
@@ -110,39 +125,79 @@ export function ActionCards() {
                 </div>
 
                 {/* 🌟 Core Action Cards (Buy / Rent / Sell) */}
-                <div className="text-center max-w-3xl mx-auto mb-10">
-                    <span className="text-xs font-black text-[#006AFF] uppercase tracking-[0.2em] block mb-1">
+                <div className="text-center max-w-3xl mx-auto mb-12">
+                    <span className="text-xs font-black text-[#006AFF] uppercase tracking-[0.2em] block mb-2">
                         Tailored Journey
                     </span>
-                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                    <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                         See How RentifyAI Can Help You
                     </h2>
+                    <p className="text-slate-500 text-sm mt-2">
+                        Whether you are investing, leasing, or liquidating luxury real estate in India.
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
                     {actionCards.map((card) => (
                         <div
                             key={card.title}
-                            className="bg-white rounded-2xl p-8 shadow-xs border border-slate-200/80 hover:shadow-xl hover:border-blue-400 transition-all flex flex-col items-center text-center group"
+                            className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl border border-slate-200/90 hover:border-blue-400/80 transition-all duration-300 flex flex-col group"
                         >
-                            <div className="w-20 h-20 mb-6 rounded-2xl bg-blue-50 flex items-center justify-center group-hover:bg-[#006AFF] group-hover:text-white transition-all text-[#006AFF] shadow-inner">
-                                <card.icon className="w-9 h-9 transition-colors" />
+                            {/* Visual Image Header */}
+                            <div className="relative h-56 sm:h-60 w-full overflow-hidden bg-slate-900">
+                                <img
+                                    src={card.image}
+                                    alt={card.title}
+                                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
+                                
+                                {/* Top Floating Badge */}
+                                <div className="absolute top-4 left-4">
+                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-white uppercase shadow-md backdrop-blur-md ${card.badgeColor}`}>
+                                        <Zap className="w-3 h-3 text-white" />
+                                        {card.badge}
+                                    </span>
+                                </div>
+
+                                {/* Floating Icon Squircle */}
+                                <div className="absolute -bottom-4 right-6 w-14 h-14 rounded-2xl bg-white shadow-xl border border-slate-100 flex items-center justify-center text-[#006AFF] group-hover:bg-[#006AFF] group-hover:text-white transition-all duration-300 group-hover:scale-105 z-10">
+                                    <card.icon className="w-7 h-7 transition-colors" />
+                                </div>
                             </div>
 
-                            <h3 className="text-xl font-black text-slate-900 mb-2 group-hover:text-[#006AFF] transition-colors">
-                                {card.title}
-                            </h3>
+                            {/* Card Content Body */}
+                            <div className="p-6 sm:p-7 pt-7 flex flex-col flex-grow text-left">
+                                <span className="text-[11px] font-black text-blue-600 uppercase tracking-widest block mb-1">
+                                    {card.subtitle}
+                                </span>
 
-                            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-6 flex-grow">
-                                {card.description}
-                            </p>
+                                <h3 className="text-2xl font-black text-slate-900 mb-2 group-hover:text-[#006AFF] transition-colors">
+                                    {card.title}
+                                </h3>
 
-                            <Link
-                                href={card.href}
-                                className="w-full inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-[#006AFF] text-[#006AFF] font-bold text-xs uppercase tracking-wider hover:bg-[#006AFF] hover:text-white transition-all shadow-xs"
-                            >
-                                {card.cta}
-                            </Link>
+                                <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-5">
+                                    {card.description}
+                                </p>
+
+                                {/* Features Checklist */}
+                                <ul className="space-y-2 mb-6 border-t border-slate-100 pt-4 flex-grow">
+                                    {card.features.map((feat) => (
+                                        <li key={feat} className="flex items-center text-xs font-semibold text-slate-700">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mr-2 shrink-0" />
+                                            <span>{feat}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <Link
+                                    href={card.href}
+                                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-gradient-to-r from-[#006AFF] to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-blue-500/25 group-hover:shadow-lg transition-all"
+                                >
+                                    <span>{card.cta}</span>
+                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            </div>
                         </div>
                     ))}
                 </div>
