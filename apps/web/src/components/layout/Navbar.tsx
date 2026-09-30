@@ -26,6 +26,9 @@ export function Navbar() {
                         <Link href="/rent" className="text-gray-600 hover:text-brand-600 font-medium transition-colors">
                             Rent
                         </Link>
+                        <Link href="/agent/post" className="text-gray-600 hover:text-brand-600 font-medium transition-colors">
+                            Sell
+                        </Link>
                         <Link href="/agents" className="text-gray-600 hover:text-brand-600 font-medium transition-colors">
                             Find Agents
                         </Link>
