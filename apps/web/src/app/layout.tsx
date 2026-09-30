@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "RentifyAI | India's Premium Real Estate Platform",
   description: "Find, buy, or rent luxury properties across India's most elite neighborhoods. India's #1 destination for premium real estate.",
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   openGraph: {
     title: "RentifyAI",
     description: "Premium Real Estate Platform for India's high-end market.",

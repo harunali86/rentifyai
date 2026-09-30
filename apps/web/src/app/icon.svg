@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="rentifyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="50%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Premium Gradient Squircle Background -->
+  <rect width="64" height="64" rx="16" fill="url(#rentifyGrad)" />
+  
+  <!-- Subtle House Silhouette in background -->
+  <path d="M32 13L15 27V48C15 49.6569 16.3431 51 18 51H46C47.6569 51 49 49.6569 49 48V27L32 13Z" fill="white" fill-opacity="0.12" />
+  
+  <!-- Sleek Modern Architectural Roof Gable -->
+  <path d="M14 27L32 13L50 27" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#shadow)"/>
+  
+  <!-- Bold Stylized Luxury Monogram "R" -->
+  <path d="M25 24V47M25 24H35C38.3137 24 41 26.6863 41 30C41 33.3137 38.3137 36 35 36H25M33.5 36L42 47" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#shadow)"/>
+  
+  <!-- Glowing AI Sparkle Star -->
+  <path d="M47 9L48.2 12.8L52 14L48.2 15.2L47 19L45.8 15.2L42 14L45.8 12.8L47 9Z" fill="url(#goldGrad)" />
+</svg>
